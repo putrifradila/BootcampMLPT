@@ -16,8 +16,8 @@
 
   tasks:
   # --- Pre-validation ---
-  - name: Validate required extra variables are provided and not empty
-    ansible.builtin.assert:
+    - name: Validate required extra variables are provided and not empty
+      ansible.builtin.assert:
       that:
         - git_repo_url is defined and git_repo_url | length > 0
         - podman_registry_url is defined and podman_registry_url | length > 0
@@ -29,8 +29,8 @@
       success_msg: "All required inputs are valid. Proceeding with automation."
       quiet: true   # supaya value asli nggak ikut ke-print di pesan assert
 
-  - name: Validate URL format
-    ansible.builtin.assert:
+    - name: Validate URL format
+      ansible.builtin.assert:
       that:
         - git_repo_url is match("^https?://.*")
         - podman_registry_url is match("^https?://.*")
