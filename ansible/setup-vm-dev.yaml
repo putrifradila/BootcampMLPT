@@ -25,8 +25,60 @@
           - podman_registry_password is defined and podman_registry_password | length > 0
           - oc_api_url is defined and oc_api_url | length > 0
           - oc_token is defined and oc_token | length > 0
-        fail_msg: "Input tidak valid! Pastikan Extra Variables sudah diisi dengan benar."
-        success_msg: "Semua input valid, automation dilanjutkan."
+        fail_msg: "Input tidak valid! Pastikan semua Extra Variables sudah diisi dan tidak kosong."
+        success_msg: "Semua input wajib terisi."
+        quiet: true
+
+    - name: Validasi format git_repo_url harus URL git yang valid
+      ansible.builtin.assert:
+        that:
+          - git_repo_url is match("^(https?|git)://.+\\.git$") or git_repo_url is match("^git@.+:.+\\.git$")
+        fail_msg: "git_repo_url tidak valid. Harus berupa URL git yang diakhiri .git (contoh: https://github.com/user/repo.git)"
+        success_msg: "Format git_repo_url valid."
+
+    - name: Validasi format podman_registry_url
+      ansible.builtin.assert:
+        that:
+          - podman_registry_url is match("^[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$") or podman_registry_url is match("^https?://.+")
+        fail_msg: "podman_registry_url tidak valid. Harus berupa domain registry (contoh: quay.io) atau URL lengkap."
+        success_msg: "Format podman_registry_url valid."
+
+    - name: Validasi format oc_api_url harus HTTPS dan punya port
+      ansible.builtin.assert:
+        that:
+          - oc_api_url is match("^https://.+:[0-9]+$")
+        fail_msg: "oc_api_url tidak valid. Harus berupa https://<host>:<port> (contoh: https://api.example.com:6443)"
+        success_msg: "Format oc_api_url valid."
+
+    - name: Validasi panjang minimum podman_registry_username
+      ansible.builtin.assert:
+        that:
+          - podman_registry_username | length >= 3
+        fail_msg: "podman_registry_username terlalu pendek, minimal 3 karakter."
+        success_msg: "podman_registry_username valid."
+
+    - name: Validasi panjang minimum podman_registry_password (tanpa expose value)
+      ansible.builtin.assert:
+        that:
+          - podman_registry_password | length >= 8
+        fail_msg: "podman_registry_password terlalu pendek, minimal 8 karakter."
+        success_msg: "podman_registry_password memenuhi panjang minimum."
+        quiet: true
+
+    - name: Validasi panjang minimum oc_token (sanity check, tanpa expose value)
+      ansible.builtin.assert:
+        that:
+          - oc_token | length >= 20
+        fail_msg: "oc_token terlihat tidak valid (terlalu pendek)."
+        success_msg: "oc_token memenuhi panjang minimum."
+        quiet: true
+
+    - name: Validasi git_dest adalah path absolut
+      ansible.builtin.assert:
+        that:
+          - git_dest is match("^/.+")
+        fail_msg: "git_dest harus berupa path absolut (diawali dengan /)."
+        success_msg: "git_dest valid."
 
     # --- Install ---
     - name: Install git, podman and python3
