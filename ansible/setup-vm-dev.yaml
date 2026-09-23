@@ -32,8 +32,8 @@
     - name: Validasi format git_repo_url harus URL git yang valid
       ansible.builtin.assert:
         that:
-          - git_repo_url is match("^(https?|git)://.+\\.git$") or git_repo_url is match("^git@.+:.+\\.git$")
-        fail_msg: "git_repo_url tidak valid. Harus berupa URL git yang diakhiri .git (contoh: https://github.com/user/repo.git)"
+          - git_repo_url is match("^(https?)://.+")
+        fail_msg: "git_repo_url tidak valid. Harus berupa URL http/https (contoh: https://github.com/user/repo.git atau https://gitea-host/user/repo)"
         success_msg: "Format git_repo_url valid."
 
     - name: Validasi format podman_registry_url
