@@ -1,23 +1,34 @@
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: my-container
+  name: bootcamp-app
   labels:
-    app: my-container
+    app: bootcamp-app
 spec:
-  replicas: 5
+  replicas: 1
   selector:
     matchLabels:
-      app: my-container
+      app: bootcamp-app
   template:
     metadata:
       labels:
-        app: my-container
+        app: bootcamp-app
     spec:
       containers:
-        - name: my-container
-          image: default-route-openshift-image-registry.apps.rm3.7wse.p1.openshiftapps.com/tobias-aditya-dev/my-image:1.0.0
+        - name: bootcamp-app
+          image: default-route-openshift-image-registry.apps.rm1.0a51.p1.openshiftapps.com/putrifradila-dev/dila:v1
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
               protocol: TCP
+          env:
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: MONGO_URI
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: DB_NAME
