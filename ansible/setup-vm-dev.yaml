@@ -14,6 +14,11 @@
     oc_token: ""
     oc_cli_download_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/openshift-client-linux.tar.gz"
 
+    # --- Pin versi exact (hasil cek: dnf list --installed git podman python3) ---
+    git_version: "2.55.0-1.fc44"
+    podman_version: "5:5.8.1-1.fc44"
+    python3_version: "3.14.3-2.fc44"
+
   tasks:
 
     - name: Validasi semua input wajib sebelum automation dijalankan
@@ -80,11 +85,26 @@
         fail_msg: "git_dest harus berupa path absolut (diawali dengan /)."
         success_msg: "git_dest valid."
 
-    # --- Install ---
-    - name: Install git, podman and python3
+    # --- Install (exact version, bukan latest) ---
+    - name: Install git with exact version
       ansible.builtin.dnf:
-        name: [git, podman, python3]
+        name: "git-{{ git_version }}"
         state: present
+        allow_downgrade: true
+      become: true
+
+    - name: Install podman with exact version
+      ansible.builtin.dnf:
+        name: "podman-{{ podman_version }}"
+        state: present
+        allow_downgrade: true
+      become: true
+
+    - name: Install python3 with exact version
+      ansible.builtin.dnf:
+        name: "python3-{{ python3_version }}"
+        state: present
+        allow_downgrade: true
       become: true
 
     - name: Download oc CLI
@@ -115,6 +135,15 @@
     - name: Show installed versions
       ansible.builtin.debug:
         msg: "{{ tool_versions.results | map(attribute='stdout') | list }}"
+
+    - name: Assert installed versions match the pinned exact versions
+      ansible.builtin.assert:
+        that:
+          - "git_version.split('-')[0] in tool_versions.results[0].stdout"
+          - "podman_version.split(':')[-1].split('-')[0] in tool_versions.results[1].stdout"
+          - "python3_version.split('-')[0] in tool_versions.results[2].stdout"
+        fail_msg: "Versi tools yang terinstall tidak sesuai dengan versi yang sudah dipin di vars."
+        success_msg: "Semua versi tools sesuai dengan yang dipin."
 
     # --- git clone ---
     - name: Clone the git repository
